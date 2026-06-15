@@ -12,6 +12,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { WorkflowEdge as WorkflowEdgeComponent } from "@/components/workflows/edges/workflow-edge";
+import { useIsValidConnection } from "@/components/workflows/hooks/use-is-valid-connection";
 import {
   Activity,
   Braces,
@@ -88,6 +89,8 @@ function WorkflowBuilderCanvas() {
     },
     [setEdges]
   );
+
+  const isValidConnection = useIsValidConnection(nodes, edges);
 
   const addNode = useCallback(
     (definition: (typeof workflowNodeDefinitions)[number]) => {
@@ -186,6 +189,7 @@ function WorkflowBuilderCanvas() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          isValidConnection={isValidConnection}
           defaultViewport={{ x: 120, y: 120, zoom: 0.88 }}
           fitView
           fitViewOptions={{ padding: 0.25 }}
