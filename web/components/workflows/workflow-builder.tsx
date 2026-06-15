@@ -31,6 +31,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
+  getWorkflowNodeDefinition,
   initialWorkflowEdges,
   initialWorkflowNodes,
   workflowNodeDefinitions,
@@ -359,6 +360,8 @@ function WorkflowStat({ label, value }: { label: string; value: number }) {
 
 function NodeInspector({ node }: { node: WorkflowNode }) {
   const configEntries = Object.entries(node.data.config);
+  const metadata = getWorkflowNodeDefinition(node.data.nodeId);
+  const PropertyPanel = metadata.propertyPanel;
 
   return (
     <div className="space-y-4">
@@ -387,24 +390,34 @@ function NodeInspector({ node }: { node: WorkflowNode }) {
         />
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <CheckCircle2 className="size-4" />
-          Config Preview
+      {PropertyPanel ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <CheckCircle2 className="size-4" />
+            Config
+          </div>
+          <PropertyPanel node={node} />
         </div>
-        <div className="rounded-md border bg-muted/40 p-3 font-mono text-xs leading-5">
-          {configEntries.length ? (
-            configEntries.map(([key, value]) => (
-              <div key={key} className="flex justify-between gap-4">
-                <span className="text-muted-foreground">{key}</span>
-                <span className="truncate text-right">{String(value)}</span>
-              </div>
-            ))
-          ) : (
-            <span className="text-muted-foreground">No config</span>
-          )}
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <CheckCircle2 className="size-4" />
+            Config Preview
+          </div>
+          <div className="rounded-md border bg-muted/40 p-3 font-mono text-xs leading-5">
+            {configEntries.length ? (
+              configEntries.map(([key, value]) => (
+                <div key={key} className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">{key}</span>
+                  <span className="truncate text-right">{String(value)}</span>
+                </div>
+              ))
+            ) : (
+              <span className="text-muted-foreground">No config</span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

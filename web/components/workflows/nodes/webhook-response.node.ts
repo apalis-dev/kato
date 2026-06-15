@@ -1,4 +1,5 @@
 import type { WorkflowNodeMetadata } from "@/components/workflows/types";
+import { WebhookResponsePropertyPanel } from "@/components/workflows/nodes/property-panels/webhook-response-property-panel";
 
 export const metadata: WorkflowNodeMetadata = {
 	nodeId: "webhook-response",
@@ -6,4 +7,5 @@ export const metadata: WorkflowNodeMetadata = {
 	category: "output",
 	description: "Returns the final payload to the caller.",
 	defaultConfig: { status: 200 },
+	propertyPanel: WebhookResponsePropertyPanel,
 };

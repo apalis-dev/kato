@@ -1,4 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
+import type * as React from "react";
 
 export type WorkflowNodeCategory = "trigger" | "transform" | "output";
 
@@ -8,6 +9,7 @@ export type WorkflowNodeMetadata = {
 	category: WorkflowNodeCategory;
 	description: string;
 	defaultConfig: Record<string, unknown>;
+	propertyPanel?: React.ComponentType<{ node: WorkflowNode }>;
 };
 
 export type WorkflowNodeData = {
