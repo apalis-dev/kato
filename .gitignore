@@ -26,3 +26,4 @@ target
 /target
 
 db.sqlite3
+.DS_Store
