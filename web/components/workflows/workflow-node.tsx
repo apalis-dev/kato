@@ -1,13 +1,7 @@
 import type { NodeProps } from "@xyflow/react";
 
 import { Position, useReactFlow } from "@xyflow/react";
-import {
-  Braces,
-  EllipsisVertical,
-  MousePointer2,
-  Send,
-  Trash2,
-} from "lucide-react";
+import { Braces, MousePointer2, Send, Trash2 } from "lucide-react";
 import { useCallback } from "react";
 
 import {
@@ -20,13 +14,6 @@ import {
 import { LabeledHandle } from "@/components/labeled-handle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type {
   WorkflowNode,
   WorkflowNodeCategory,
@@ -94,30 +81,18 @@ export function WorkflowNodeComponent({
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="nodrag"
-              aria-label="Node actions"
-              title="Node actions"
-            >
-              <EllipsisVertical className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Node Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              disabled={!data.deletable}
-              onSelect={handleDelete}
-            >
-              <Trash2 className="size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          type="button"
+          variant="destructive"
+          size="icon-sm"
+          className="nodrag text-muted-foreground hover:text-destructive"
+          disabled={!data.deletable}
+          onClick={handleDelete}
+          aria-label="Delete node"
+          title="Delete node"
+        >
+          <Trash2 className="size-4" />
+        </Button>
       </BaseNodeHeader>
 
       <BaseNodeContent>

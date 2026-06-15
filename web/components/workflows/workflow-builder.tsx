@@ -1,4 +1,4 @@
-import type { Connection, EdgeTypes } from "@xyflow/react";
+import type { Connection, EdgeTypes, OnConnectStart } from "@xyflow/react";
 
 import {
   addEdge,
@@ -10,7 +10,9 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
+import { AddNodeFloatingMenu } from "@/components/workflows/components/add-node-floating-menu";
 import { WorkflowEdge as WorkflowEdgeComponent } from "@/components/workflows/edges/workflow-edge";
 import { useIsValidConnection } from "@/components/workflows/hooks/use-is-valid-connection";
 import {
@@ -24,7 +26,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -58,6 +60,19 @@ function WorkflowBuilderCanvas() {
   const [edges, setEdges, onEdgesChange] =
     useEdgesState<WorkflowEdge>(initialWorkflowEdges);
 
+  const { screenToFlowPosition } = useReactFlow();
+
+  const [floatingMenu, setFloatingMenu] = useState<{
+    screenPosition: { x: number; y: number };
+    source: string;
+    sourceHandle: string;
+  } | null>(null);
+
+  const connectionSourceRef = useRef<{
+    nodeId: string;
+    handleId: string;
+  } | null>(null);
+
   const selectedNode = useMemo(
     () => nodes.find((node) => node.selected) ?? null,
     [nodes]
@@ -75,6 +90,7 @@ function WorkflowBuilderCanvas() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      connectionSourceRef.current = null;
       setEdges((currentEdges) =>
         addEdge(
           {
@@ -89,6 +105,88 @@ function WorkflowBuilderCanvas() {
     },
     [setEdges]
   );
+
+  const onConnectStart = useCallback<OnConnectStart>(
+    (_, { nodeId, handleId }) => {
+      if (!nodeId) return;
+      connectionSourceRef.current = {
+        nodeId,
+        handleId: handleId ?? "output",
+      };
+    },
+    []
+  );
+
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      const source = connectionSourceRef.current;
+      connectionSourceRef.current = null;
+
+      if (!source) return;
+
+      const clientX =
+        "changedTouches" in event && event.changedTouches.length > 0
+          ? event.changedTouches[0].clientX
+          : (event as MouseEvent).clientX;
+      const clientY =
+        "changedTouches" in event && event.changedTouches.length > 0
+          ? event.changedTouches[0].clientY
+          : (event as MouseEvent).clientY;
+
+      setFloatingMenu({
+        screenPosition: { x: clientX, y: clientY },
+        source: source.nodeId,
+        sourceHandle: source.handleId,
+      });
+    },
+    []
+  );
+
+  const handleAddConnectedNode = useCallback(
+    (definition: (typeof workflowNodeDefinitions)[number]) => {
+      if (!floatingMenu) return;
+
+      const flowPosition = screenToFlowPosition({
+        x: floatingMenu.screenPosition.x,
+        y: floatingMenu.screenPosition.y,
+      });
+
+      const newNode: WorkflowNode = {
+        id: `node-${definition.nodeId}-${nanoid(6)}`,
+        type: "workflow",
+        position: flowPosition,
+        data: createWorkflowNodeData(definition),
+      };
+
+      setNodes((currentNodes) =>
+        currentNodes
+          .map((currentNode) => ({ ...currentNode, selected: false }))
+          .concat({ ...newNode, selected: true })
+      );
+
+      setEdges((currentEdges) =>
+        addEdge(
+          {
+            id: `edge-${nanoid(8)}`,
+            type: "workflow",
+            source: floatingMenu.source,
+            sourceHandle: floatingMenu.sourceHandle,
+            target: newNode.id,
+            targetHandle: "input",
+            data: {},
+          },
+          currentEdges
+        )
+      );
+
+      setFloatingMenu(null);
+    },
+    [floatingMenu, screenToFlowPosition, setEdges, setNodes]
+  );
+
+  const closeFloatingMenu = useCallback(() => {
+    setFloatingMenu(null);
+  }, []);
 
   const isValidConnection = useIsValidConnection(nodes, edges);
 
@@ -189,6 +287,8 @@ function WorkflowBuilderCanvas() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
           isValidConnection={isValidConnection}
           defaultViewport={{ x: 120, y: 120, zoom: 0.88 }}
           fitView
@@ -235,6 +335,15 @@ function WorkflowBuilderCanvas() {
           )}
         </div>
       </aside>
+
+      {floatingMenu && (
+        <AddNodeFloatingMenu
+          position={floatingMenu.screenPosition}
+          definitions={workflowNodeDefinitions}
+          onSelect={handleAddConnectedNode}
+          onClose={closeFloatingMenu}
+        />
+      )}
     </div>
   );
 }
