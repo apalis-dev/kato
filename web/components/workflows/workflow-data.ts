@@ -1,51 +1,34 @@
 import type {
 	WorkflowEdge,
 	WorkflowNode,
-	WorkflowNodeCategory,
 	WorkflowNodeData,
+	WorkflowNodeMetadata,
 } from "@/components/workflows/types";
 
-export type WorkflowNodeDefinition = {
-	nodeId: string;
-	label: string;
-	category: WorkflowNodeCategory;
-	description: string;
-	defaultConfig: Record<string, unknown>;
-};
+const nodeModules = import.meta.glob<{
+	metadata: WorkflowNodeMetadata;
+}>("./nodes/*.node.ts", { eager: true });
 
-export const workflowNodeDefinitions: WorkflowNodeDefinition[] = [
-	{
-		nodeId: "manual-trigger",
-		label: "Manual Trigger",
-		category: "trigger",
-		description: "Starts the workflow from an explicit run request.",
-		defaultConfig: { event: "manual" },
-	},
-	{
-		nodeId: "http-request",
-		label: "HTTP Request",
-		category: "transform",
-		description: "Calls an external endpoint and forwards the response.",
-		defaultConfig: { method: "GET", url: "https://api.example.com" },
-	},
-	{
-		nodeId: "condition",
-		label: "Condition",
-		category: "transform",
-		description: "Branches execution based on a simple expression.",
-		defaultConfig: { expression: "payload.ok === true" },
-	},
-	{
-		nodeId: "webhook-response",
-		label: "Webhook Response",
-		category: "output",
-		description: "Returns the final payload to the caller.",
-		defaultConfig: { status: 200 },
-	},
-];
+export const workflowNodeDefinitions: WorkflowNodeMetadata[] = Object.values(
+	nodeModules,
+).map((module) => module.metadata);
+
+export const workflowNodeDefinitionMap = new Map(
+	workflowNodeDefinitions.map((definition) => [definition.nodeId, definition]),
+);
+
+export function getWorkflowNodeDefinition(
+	nodeId: string,
+): WorkflowNodeMetadata {
+	const definition = workflowNodeDefinitionMap.get(nodeId);
+	if (!definition) {
+		throw new Error(`Workflow node definition "${nodeId}" not found`);
+	}
+	return definition;
+}
 
 export function createWorkflowNodeData(
-	definition: WorkflowNodeDefinition,
+	definition: WorkflowNodeMetadata,
 	overrides: Partial<WorkflowNodeData> = {},
 ): WorkflowNodeData {
 	return {
@@ -64,7 +47,7 @@ export const initialWorkflowNodes: WorkflowNode[] = [
 		id: "node-trigger",
 		type: "workflow",
 		position: { x: 0, y: 80 },
-		data: createWorkflowNodeData(workflowNodeDefinitions[0], {
+		data: createWorkflowNodeData(getWorkflowNodeDefinition("manual-trigger"), {
 			deletable: false,
 		}),
 	},
@@ -72,19 +55,19 @@ export const initialWorkflowNodes: WorkflowNode[] = [
 		id: "node-http",
 		type: "workflow",
 		position: { x: 340, y: 10 },
-		data: createWorkflowNodeData(workflowNodeDefinitions[1]),
+		data: createWorkflowNodeData(getWorkflowNodeDefinition("http-request")),
 	},
 	{
 		id: "node-condition",
 		type: "workflow",
 		position: { x: 340, y: 190 },
-		data: createWorkflowNodeData(workflowNodeDefinitions[2]),
+		data: createWorkflowNodeData(getWorkflowNodeDefinition("condition")),
 	},
 	{
 		id: "node-output",
 		type: "workflow",
 		position: { x: 700, y: 100 },
-		data: createWorkflowNodeData(workflowNodeDefinitions[3], {
+		data: createWorkflowNodeData(getWorkflowNodeDefinition("webhook-response"), {
 			deletable: false,
 		}),
 	},
