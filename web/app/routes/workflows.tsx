@@ -57,7 +57,7 @@ const mockWorkflows: WorkflowSummary[] = [
 
 const statusVariants = {
   draft: "secondary",
-  active: "default",
+  active: "success",
   archived: "outline",
 } satisfies Record<
   WorkflowSummary["status"],
