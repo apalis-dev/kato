@@ -71,9 +71,11 @@ function WorkflowBuilderCanvas() {
     handleId: string;
   } | null>(null);
 
+  const [inspectedNodeId, setInspectedNodeId] = useState<string | null>(null);
+
   const selectedNode = useMemo(
-    () => nodes.find((node) => node.selected) ?? null,
-    [nodes]
+    () => nodes.find((node) => node.id === inspectedNodeId) ?? null,
+    [nodes, inspectedNodeId]
   );
 
   const stats = useMemo(
@@ -154,11 +156,11 @@ function WorkflowBuilderCanvas() {
         data: createWorkflowNodeData(definition),
       };
 
-      setNodes((currentNodes) =>
-        currentNodes
-          .map((currentNode) => ({ ...currentNode, selected: false }))
-          .concat({ ...newNode, selected: true })
-      );
+      setNodes((currentNodes) => [
+        ...currentNodes.map((currentNode) => ({ ...currentNode, selected: false })),
+        newNode,
+      ]);
+      setInspectedNodeId(newNode.id);
 
       setEdges((currentEdges) =>
         addEdge(
@@ -199,14 +201,14 @@ function WorkflowBuilderCanvas() {
         data: createWorkflowNodeData(definition),
       };
 
-      setNodes((currentNodes) =>
-        currentNodes
-          .map((currentNode) => ({
-            ...currentNode,
-            selected: false,
-          }))
-          .concat({ ...node, selected: true })
-      );
+      setNodes((currentNodes) => [
+        ...currentNodes.map((currentNode) => ({
+          ...currentNode,
+          selected: false,
+        })),
+        node,
+      ]);
+      setInspectedNodeId(node.id);
     },
     [nodes.length, setNodes]
   );
@@ -295,6 +297,8 @@ function WorkflowBuilderCanvas() {
           onConnect={onConnect}
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
+          onNodeClick={(_, node) => setInspectedNodeId(node.id)}
+          onPaneClick={() => setInspectedNodeId(null)}
           isValidConnection={isValidConnection}
           defaultViewport={{ x: 120, y: 120, zoom: 0.88 }}
           fitView
@@ -341,11 +345,7 @@ function WorkflowBuilderCanvas() {
               variant="ghost"
               size="icon-sm"
               className="size-7 text-muted-foreground/60 hover:text-foreground"
-              onClick={() =>
-                setNodes((currentNodes) =>
-                  currentNodes.map((node) => ({ ...node, selected: false }))
-                )
-              }
+              onClick={() => setInspectedNodeId(null)}
               aria-label="Close inspector"
               title="Close inspector"
             >
