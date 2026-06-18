@@ -4,8 +4,10 @@ import { HttpRequestPropertyPanel } from "@/components/workflows/nodes/property-
 export const metadata: WorkflowNodeMetadata = {
 	nodeId: "http-request",
 	label: "HTTP Request",
-	category: "transform",
+	category: "action",
 	description: "Calls an external endpoint and forwards the response.",
 	defaultConfig: { method: "GET", url: "https://api.example.com" },
+	inputs: 1,
+	outputs: 1,
 	propertyPanel: HttpRequestPropertyPanel,
 };

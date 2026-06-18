@@ -1,8 +1,8 @@
 import type { NodeProps } from "@xyflow/react";
 
 import { Position, useReactFlow } from "@xyflow/react";
-import { Braces, MousePointer2, Send, Trash2 } from "lucide-react";
-import { useCallback } from "react";
+import { Braces, MousePointer2, Trash2 } from "lucide-react";
+import { useCallback, useMemo } from "react";
 
 import {
   BaseNode,
@@ -18,18 +18,17 @@ import type {
   WorkflowNode,
   WorkflowNodeCategory,
 } from "@/components/workflows/types";
+import { getWorkflowNodeDefinition } from "@/components/workflows/workflow-data";
 import { cn } from "@/lib/utils";
 
 const categoryIcons = {
   trigger: MousePointer2,
-  transform: Braces,
-  output: Send,
+  action: Braces,
 } satisfies Record<WorkflowNodeCategory, typeof MousePointer2>;
 
 const categoryLabels = {
   trigger: "Trigger",
-  transform: "Transform",
-  output: "Output",
+  action: "Action",
 } satisfies Record<WorkflowNodeCategory, string>;
 
 export function WorkflowNodeComponent({
@@ -39,6 +38,11 @@ export function WorkflowNodeComponent({
 }: NodeProps<WorkflowNode>) {
   const { setEdges, setNodes } = useReactFlow<WorkflowNode>();
   const Icon = categoryIcons[data.category];
+
+  const definition = useMemo(
+    () => getWorkflowNodeDefinition(data.nodeId),
+    [data.nodeId]
+  );
 
   const handleDelete = useCallback(() => {
     if (!data.deletable) {
@@ -53,9 +57,9 @@ export function WorkflowNodeComponent({
 
   return (
     <BaseNode
-      className={cn("w-72 shadow-sm", selected && "ring-2 ring-ring/30")}
+      className={cn("w-72", selected && "ring-1 ring-foreground/15")}
     >
-      {data.category !== "trigger" ? (
+      {definition.inputs > 0 ? (
         <LabeledHandle
           id="input"
           type="target"
@@ -66,16 +70,14 @@ export function WorkflowNodeComponent({
         />
       ) : null}
 
-      <BaseNodeHeader className="border-b">
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted">
-            <Icon className="size-4" />
-          </div>
+      <BaseNodeHeader>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Icon className="size-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
-            <BaseNodeHeaderTitle className="truncate text-sm">
+            <BaseNodeHeaderTitle className="truncate text-sm font-semibold">
               {data.label}
             </BaseNodeHeaderTitle>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground/70">
               {data.nodeId}
             </p>
           </div>
@@ -83,9 +85,9 @@ export function WorkflowNodeComponent({
 
         <Button
           type="button"
-          variant="destructive"
+          variant="ghost"
           size="icon-sm"
-          className="nodrag text-muted-foreground hover:text-destructive"
+          className="nodrag size-7 text-muted-foreground/60 hover:text-destructive"
           disabled={!data.deletable}
           onClick={handleDelete}
           aria-label="Delete node"
@@ -96,26 +98,25 @@ export function WorkflowNodeComponent({
       </BaseNodeHeader>
 
       <BaseNodeContent>
-        <p className="line-clamp-2 text-sm text-muted-foreground">
+        <p className="line-clamp-2 text-sm leading-5 text-muted-foreground">
           {data.description}
         </p>
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant="secondary">{categoryLabels[data.category]}</Badge>
-          <Badge variant="outline">
-            {Object.keys(data.config).length} config fields
+          <Badge variant="secondary" className="text-[11px] font-medium">
+            {categoryLabels[data.category]}
           </Badge>
         </div>
       </BaseNodeContent>
 
-      {data.category !== "output" ? (
-        <BaseNodeFooter className="items-end bg-muted/30 py-2">
+      {definition.outputs > 0 ? (
+        <BaseNodeFooter className="items-end">
           <LabeledHandle
             id="output"
             type="source"
             position={Position.Right}
             title="out"
             className="justify-end"
-            labelClassName="text-xs text-muted-foreground"
+            labelClassName="text-[10px] text-muted-foreground/60"
           />
         </BaseNodeFooter>
       ) : null}

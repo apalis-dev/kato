@@ -4,8 +4,10 @@ import { WebhookResponsePropertyPanel } from "@/components/workflows/nodes/prope
 export const metadata: WorkflowNodeMetadata = {
 	nodeId: "webhook-response",
 	label: "Webhook Response",
-	category: "output",
+	category: "action",
 	description: "Returns the final payload to the caller.",
 	defaultConfig: { status: 200 },
+	inputs: 1,
+	outputs: 0,
 	propertyPanel: WebhookResponsePropertyPanel,
 };

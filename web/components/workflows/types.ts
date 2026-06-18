@@ -1,7 +1,7 @@
 import type { Edge, Node } from "@xyflow/react";
 import type * as React from "react";
 
-export type WorkflowNodeCategory = "trigger" | "transform" | "output";
+export type WorkflowNodeCategory = "trigger" | "action";
 
 export type WorkflowNodeMetadata = {
 	nodeId: string;
@@ -9,6 +9,8 @@ export type WorkflowNodeMetadata = {
 	category: WorkflowNodeCategory;
 	description: string;
 	defaultConfig: Record<string, unknown>;
+	inputs: number;
+	outputs: number;
 	propertyPanel?: React.ComponentType<{ node: WorkflowNode }>;
 };
 
@@ -53,7 +55,7 @@ export function workflowNodeRowToReactFlowNode(
     data: {
       label: row.label ?? row.node_id,
       nodeId: row.node_id,
-      category: "transform",
+      category: "action",
       description: "",
       config: row.config ? JSON.parse(row.config) : {},
       deletable: true,

@@ -7,5 +7,7 @@ export const metadata: WorkflowNodeMetadata = {
 	category: "trigger",
 	description: "Starts the workflow from an explicit run request.",
 	defaultConfig: { event: "manual" },
+	inputs: 0,
+	outputs: 1,
 	propertyPanel: ManualTriggerPropertyPanel,
 };

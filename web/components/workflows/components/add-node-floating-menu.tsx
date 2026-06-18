@@ -1,4 +1,4 @@
-import { MousePointer2, Braces, Send } from "lucide-react";
+import { MousePointer2, Braces } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +9,7 @@ import type {
 
 const categoryIcons = {
   trigger: MousePointer2,
-  transform: Braces,
-  output: Send,
+  action: Braces,
 } satisfies Record<WorkflowNodeCategory, typeof MousePointer2>;
 
 type AddNodeFloatingMenuProps = {

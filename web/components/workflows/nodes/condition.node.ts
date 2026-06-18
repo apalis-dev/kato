@@ -4,8 +4,10 @@ import { ConditionPropertyPanel } from "@/components/workflows/nodes/property-pa
 export const metadata: WorkflowNodeMetadata = {
 	nodeId: "condition",
 	label: "Condition",
-	category: "transform",
+	category: "action",
 	description: "Branches execution based on a simple expression.",
 	defaultConfig: { expression: "payload.ok === true" },
+	inputs: 1,
+	outputs: 1,
 	propertyPanel: ConditionPropertyPanel,
 };
